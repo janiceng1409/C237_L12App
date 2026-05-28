@@ -1,30 +1,85 @@
 // Import required modules
 const express = require('express');
 
-// Create an Express application
 const app = express();
 
-// Set EJS as the view engine
+// Set EJS as view engine
 app.set('view engine', 'ejs');
 
-// Middleware to parse request bodies
+// Middleware
 app.use(express.urlencoded({ extended: true }));
 
-// Declare any necessary variables or in-memory data structures here
+// Static folder
+app.use(express.static('public'));
 
+// Sample song data
+const songs = [
+    {
+        id: 1,
+        title: 'Blinding Lights',
+        artist: 'The Weeknd',
+        image: '/image/theweeknd.jpg'
+    },
+    {
+        id: 2,
+        title: 'Levitating',
+        artist: 'Dua Lipa',
+        image: '/image/dualipa.jpg'
+    },
+    {
+        id: 3,
+        title: 'Stay',
+        artist: 'The Kid LAROI',
+        image: '/image/stay.jpg'
+    }
+];
 
-// TASK: Define appropriate routes below
-// ---------------------------------------------------
+// Store favourites
+let favourites = [];
 
-//Define a route to render the index page
+// Home page
 app.get('/', (req, res) => {
-    res.render('index');
+    res.render('index', { songs });
 });
 
-// ---------------------------------------------------
+// Remove from favourites
+app.post('/removeFavourite/:id', (req, res) => {
 
-// Start the server
+    const songId = parseInt(req.params.id);
+
+    favourites = favourites.filter(song => song.id !== songId);
+
+    res.redirect('/favourites');
+
+});
+
+// Favourite page
+app.get('/favourites', (req, res) => {
+    res.render('favourites', { favourites });
+});
+
+// Add to favourites
+app.post('/favourite/:id', (req, res) => {
+
+    const songId = parseInt(req.params.id);
+
+    const selectedSong = songs.find(song => song.id === songId);
+
+    if (selectedSong && !favourites.includes(selectedSong)) {
+        favourites.push(selectedSong);
+    }
+
+    res.redirect('/');
+});
+
+// View favourites page
+app.get('/favourites', (req, res) => {
+    res.render('favourites', { favourites });
+});
+
+// Start server
 const PORT = process.env.PORT || 3000;
+
 app.listen(PORT, () => {
-    console.log(`Server is running on port http://localhost:${PORT}`);
+    console.log(`Server running at http://localhost:${PORT}`);
 });
